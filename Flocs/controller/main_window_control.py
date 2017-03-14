@@ -6,7 +6,8 @@ Created on 18/02/2017
 @author: augusto
 '''
 import wx
-from views.main_window import MainWindow
+from views.main_window import MainWindow 
+from views.add_folder_dialog import AddFolderDialog
 from controller.validators import TextObjectValidator, NumberValidator 
 
 class MainWindowControl:
@@ -24,6 +25,10 @@ class MainWindowControl:
         frame_width, frame_height = self.frame.GetSize()
         self.frame.panel_initial.setSplitterPanelSize((frame_width*2)/3)
         self.frame.panel_initial.setSplitterImageSize(frame_width/6)
+        
+        # Create local references to components
+        self.imageTree = self.frame.panel_initial.image.list_files
+        self.textOutput = self.frame.panel_initial.parameters.outputBrowser.fileText
         
         # --------------------------------------------------------
         # -----------------  Set Binds To Frame ------------------
@@ -85,8 +90,11 @@ class MainWindowControl:
         self.frame.Bind(wx.EVT_BUTTON, self.onAddFile, self.frame.panel_initial.getAddFileButton())
         # Remove Bind
         self.frame.Bind(wx.EVT_BUTTON, self.onRemove, self.frame.panel_initial.getRemoveButton())
-    
-    
+        
+        # --------------------------------------------------------
+        # --------------  Set Binds To Image Tree ----------------
+        # --------------------------------------------------------
+        self.frame.Bind(wx.EVT_TREE_SEL_CHANGED, self.onSelChanged, self.imageTree)
     # --------------------------------------------------------
     # -----------------  Set Binds Functions -----------------
     # -------------------------------------------------------- 
@@ -128,8 +136,15 @@ class MainWindowControl:
     def onStart(self, event):
         message = self.frame.panel_initial.parameters.ValidateInputs()
         if  message == "":
-            wx.MessageBox('Start Information', 'Info', 
-            wx.OK | wx.ICON_INFORMATION)
+            imageList = self.frame.panel_initial.image.traverseTree()
+            if not imageList:
+                wx.MessageBox(u'No hay Imágenes para Procesar', 'Error', 
+                wx.OK | wx.ICON_ERROR)
+            else:
+                for imagePath in imageList:
+                    print (imagePath)
+                wx.MessageBox('Start Information', 'Info', 
+                wx.OK | wx.ICON_INFORMATION)
         else:
             wx.MessageBox(message, u'Error en Parámetros Iniciales', 
             wx.OK | wx.ICON_ERROR)
@@ -142,21 +157,55 @@ class MainWindowControl:
     def onOutput(self, event):
         self.openFolderDialog = wx.DirDialog(self.frame,"Abrir", style = wx.DD_DEFAULT_STYLE| wx.DD_DIR_MUST_EXIST)
         if self.openFolderDialog.ShowModal() == wx.ID_OK:
-            self.frame.panel_initial.parameters.outputBrowser.fileText.SetValue(self.openFolderDialog.GetPath())
+            self.textOutput.SetValue(self.openFolderDialog.GetPath())
         self.openFolderDialog.Destroy() 
         
     def onAddFolder(self, event):
-        wx.MessageBox('Add Folder Information', 'Info', 
-            wx.OK | wx.ICON_INFORMATION)
+        dialog_add = AddFolderDialog(None)
+        dialog_add.Centre()
+        if dialog_add.ShowModal() == wx.ID_OK:
+            self.imageTree.AppendItem(self.imageTree.GetRootItem(), 'Tiempo = ' + str(dialog_add.text_time.GetValue()) + ' min')
+        dialog_add.Destroy()
+        
         
     def onAddFile(self, event):
-        wx.MessageBox('Add File Information', 'Info', 
-            wx.OK | wx.ICON_INFORMATION)
+        self.openFileDialog = wx.FileDialog(self.frame,"Abrir", wildcard = 
+                                            "PNG files (*.png)|*.png|TIFF files (*.tif)|*.tif", 
+                                      style = wx.FD_OPEN | wx.FD_FILE_MUST_EXIST|wx.FD_MULTIPLE)
+        if self.openFileDialog.ShowModal() == wx.ID_OK:
+            item = self.imageTree.GetSelection()
+            if self.imageTree.GetRootItem() == self.imageTree.GetItemParent(item):
+                item_new = self.frame.panel_initial.image.addItem(item, self.openFileDialog.GetPaths())
+                self.imageTree.Expand(item)
+            else:
+                self.frame.panel_initial.image.addItem(self.imageTree.GetItemParent(item), self.openFileDialog.GetPaths())
+                self.imageTree.Expand(self.imageTree.GetItemParent(item))
+        self.openFileDialog.Destroy()
     
     def onRemove(self, event):
-        wx.MessageBox('Remove Information', 'Info', 
-            wx.OK | wx.ICON_INFORMATION)
-           
+        item = self.imageTree.GetSelection()
+        dialog_remove = wx.MessageDialog(self.frame, u'Desea eliminar "' + self.imageTree.GetItemText(item) +'"', 'Eliminar')
+        if dialog_remove.ShowModal() == wx.ID_OK:
+            self.imageTree.Delete(item)
+        if not self.frame.panel_initial.image.list_files.GetSelection():
+            self.frame.panel_initial.image.button_addFile.Disable()
+            self.frame.panel_initial.image.button_remove.Disable()
+        else: 
+            self.frame.panel_initial.image.button_addFile.Enable()
+            self.frame.panel_initial.image.button_remove.Enable()
+        self.frame.panel_initial.image.removeImage()
         
-        
-        
+    def onSelChanged(self, event):
+        item =  event.GetItem()
+        if not self.frame.panel_initial.image.list_files.GetSelection():
+            self.frame.panel_initial.image.button_addFile.Disable()
+            self.frame.panel_initial.image.button_remove.Disable()
+        else: 
+            self.frame.panel_initial.image.button_addFile.Enable()
+            self.frame.panel_initial.image.button_remove.Enable()
+       
+        if self.imageTree.GetRootItem() == self.imageTree.GetItemParent(item):
+            pass
+        else:
+            self.frame.panel_initial.image.onView((event.GetEventObject().GetItemText(item)))
+

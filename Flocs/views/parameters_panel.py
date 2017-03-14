@@ -19,8 +19,8 @@ class ParameterPanel(wx.Panel):
         
     """ Init UI Componenets """
     def initUI(self):
-        max = float("inf")
-        min = float("-inf")
+        max_float = float("inf")
+        min_float = float("-inf")
         
         # Create Validator Object
         self.validator_text = TextValidator()
@@ -49,10 +49,10 @@ class ParameterPanel(wx.Panel):
         self.outputBrowser = BrowserPanel(self, u' Carpeta de Salida:', 'Carpeta de Salida')
         
         #set dir for images
-        dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'images/'))
+        dir_image = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'images/'))
     
         # Create bitmap for Buttons
-        bmpPlay = wx.BitmapFromImage(wx.Image(os.path.join(dir, 'play.png')))
+        bmpPlay = wx.BitmapFromImage(wx.Image(os.path.join(dir_image, 'play.png')))
         
         # Init Button       
         self.initButton = GenBitmapTextButton(self, wx.ID_ANY, bitmap = bmpPlay, label= u' Iniciar')  
@@ -76,11 +76,11 @@ class ParameterPanel(wx.Panel):
         
         # Temperatura (Decimal)-(25.0, 80.0)
         label_temp = wx.StaticText(self,  wx.ID_ANY, u' &Temperatura:')
-        self.text_temp = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="40", min = min, max = max, initial=40.0, inc=0.1, name = "Temperatura") 
+        self.text_temp = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="40", min = min_float, max = max_float, initial=40.0, inc=0.1, name = "Temperatura") 
         
         # Dilución (Decimal)-(0.0, 1.0)
         label_dilution = wx.StaticText(self,  wx.ID_ANY, u' &Dilución:')
-        self.text_dilution =  wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0", min = min, max = max, initial=0, inc=0.05, name = "Dilucion")
+        self.text_dilution =  wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0", min = min_float, max = max_float, initial=0, inc=0.05, name = "Dilucion")
         
         # Fecha (Date)-()
         label_date = wx.StaticText(self,  wx.ID_ANY, u' &Fecha:')
@@ -88,27 +88,27 @@ class ParameterPanel(wx.Panel):
         
         # Volumen para toma de Imagenes (Decimal)-(0.5, 1000)
         label_volume = wx.StaticText(self,  wx.ID_ANY, u' &Volumen:')
-        self.text_volume =   wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min, max = max, initial=0.5, inc=0.5, name = "Volumen")
+        self.text_volume =   wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min_float, max = max_float, initial=0.5, inc=0.5, name = "Volumen")
         
         # Concentracion de contaminante (Decimal)-(0.0, 1000.0)
         label_contaminantConcentration = wx.StaticText(self,  wx.ID_ANY, u' &Concentración de contaminante:')
-        self.text_contaminantConcentration = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min, max = max, initial=0.5, inc=0.5, name = "Contaminante")
+        self.text_contaminantConcentration = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min_float, max = max_float, initial=0.5, inc=0.5, name = "Contaminante")
         
         # Concentracion de cougalante estimado (Decimal)-(0.0, 1000.0)
         label_coagulantConcentration  = wx.StaticText(self,  wx.ID_ANY, u' &Concentración de coagulante:')
-        self.text_coagulantConcentration = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min, max = max, initial=0.5, inc=0.5, name = "Coagulante") 
+        self.text_coagulantConcentration = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min_float, max = max_float, initial=0.5, inc=0.5, name = "Coagulante") 
         
         # Objetivo X (Entero)-(10, 100)
         label_objectiveX = wx.StaticText(self,  wx.ID_ANY, u' &Objetivo X:')
-        self.text_objectiveX = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="10", min = min, max = max, initial=10, inc=1, name = "ObjetivoX") 
+        self.text_objectiveX = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="10", min = min_float, max = max_float, initial=10, inc=1, name = "ObjetivoX") 
         
         # Area del Visual (Decimal)-(- , -)
         label_visualArea = wx.StaticText(self,  wx.ID_ANY, u' &Visual del área:')
-        self.text_visualArea = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0", min = min, max = max, initial=0, inc=1, name = "Visual") 
+        self.text_visualArea = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0", min = min_float, max = max_float, initial=0, inc=1, name = "Visual") 
         
         # Voltaje (Decimal)-(1.0, 10.0)
         label_volt = wx.StaticText(self,  wx.ID_ANY, u' &Voltaje:')
-        self.text_volt = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="1", min = min, max = max, initial=1, inc=0.1, name = "Voltaje") 
+        self.text_volt = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="1", min = min_float, max = max_float, initial=1, inc=0.1, name = "Voltaje") 
         
         # Observaciones (String)-()
         label_observations = wx.StaticText(self,  wx.ID_ANY, u' &Observaciones:')

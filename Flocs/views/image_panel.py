@@ -46,14 +46,21 @@ class ImagePanel(wx.Panel):
         bmpAddFile = wx.BitmapFromImage(wx.Image(os.path.join(dir, 'addFile.png')))
         bmpRemove = wx.BitmapFromImage(wx.Image(os.path.join(dir, 'remove.png')))
         
+        # create image for TreeCtrl items 
+        self.image_list = wx.ImageList(16, 16)
+        self.imageSample = self.image_list.Add(wx.Image(os.path.join(dir, 'sample.png'), wx.BITMAP_TYPE_PNG).ConvertToBitmap())
+        self.imagePhoto  = self.image_list.Add(wx.Image(os.path.join(dir, 'image.png'), wx.BITMAP_TYPE_PNG).ConvertToBitmap())
+        
         # Create Buttons
         
         # Add file button
-        self.button_addFolder = wx.BitmapButton(self.listPanel, wx.ID_ANY, bitmap = bmpAddFolder, style = wx.BU_EXACTFIT)
+        self.button_addFolder = wx.BitmapButton(self.listPanel, wx.ID_ANY, bitmap = bmpAddFolder)
         # Add Folder Button
-        self.button_addFile = wx.BitmapButton(self.listPanel, wx.ID_ANY, bitmap = bmpAddFile, style = wx.BU_EXACTFIT)
+        self.button_addFile = wx.BitmapButton(self.listPanel, wx.ID_ANY, bitmap = bmpAddFile)
+        self.button_addFile.Disable()
         #remove button
-        self.button_remove = wx.BitmapButton(self.listPanel, wx.ID_ANY, bitmap = bmpRemove, style = wx.BU_EXACTFIT)
+        self.button_remove = wx.BitmapButton(self.listPanel, wx.ID_ANY, bitmap = bmpRemove)
+        self.button_remove.Disable()
         
         # tooltip for Button
         self.button_addFolder.SetToolTip(wx.ToolTip(u" Agregar Carpeta"))
@@ -61,8 +68,10 @@ class ImagePanel(wx.Panel):
         self.button_remove.SetToolTip(wx.ToolTip(u" Eliminar Carpeta o Archivo"))
         
         # Create File List
-        self.list_files = wx.TreeCtrl(self.listPanel, wx.ID_ANY, style = wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN)
-       
+        self.list_files = wx.TreeCtrl(self.listPanel, wx.ID_ANY, style = wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT)
+        
+        ### Add Root ### ----- CORREGIR
+        self.root = self.list_files.AddRoot('Images')
         
         # Create Image Container
         self.imagePanel = wx.Panel(self.imageSplitter, wx.ID_ANY, style= wx.NO_BORDER)
@@ -102,26 +111,42 @@ class ImagePanel(wx.Panel):
     # --------------------  Add Getters ----------------------
     # -------------------------------------------------------- 
     
-     
-
-
-
+    def traverseTree(self, item = None): 
+        itemList = []
+        if item is None: 
+            item = self.list_files.GetRootItem() 
+        (child ,cookie) = self.list_files.GetFirstChild(item) 
+        while child.IsOk(): 
+            itemList.append(self.list_files.GetItemText(child))
+            (child, cookie) = self.list_files.GetNextChild(item, cookie)
+        return itemList
+    
+    def addItem(self, root, paths):
+        for path in paths:
+            item = self.list_files.AppendItem(root, path ) 
+            self.list_files.SetItemPyData(item, None)      
+            self.list_files.SetItemImage(item, self.imagePhoto, wx.TreeItemIcon_Normal)
     
     def onView(self, path):
         img = cv2.imread(path, cv2.IMREAD_COLOR)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w = img.shape[:2]
         self.width = w
         self.height = h   
+        panelWidth, panelHeight = self.imagePanel.GetSizeTuple()
         rgbBmp = wx.BitmapFromBuffer(self.width, self.height, img)
-        self.image = self.scale_bitmap(rgbBmp, self.width/4, self.width/4)
-        self.imageCtrl.SetBitmap(self.image)
-        self.Refresh()
-        self.Update()
+        self.image = self.scale_bitmap(rgbBmp, panelWidth, panelHeight)
+        wx.StaticBitmap(self.imagePanel, wx.ID_ANY, self.image)
+        self.imagePanel.Refresh()
+
         
     def scale_bitmap(self, bitmap, width, height):
         image = wx.ImageFromBitmap(bitmap)
         image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
         result = wx.BitmapFromImage(image)
-        return result    
-
+        return result   
+    
+    def removeImage(self):
+        panelWidth, panelHeight = self.imagePanel.GetSizeTuple()
+        image_blank = wx.EmptyBitmapRGBA(panelWidth, panelHeight, red=255, blue= 255, green= 255) 
+        wx.StaticBitmap(self.imagePanel, wx.ID_ANY, image_blank)
+        self.imagePanel.Refresh()

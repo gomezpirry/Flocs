@@ -7,6 +7,7 @@ Created on 18/02/2017
 '''
 import wx, os
 from views.initial_panel import InitialPanel
+from wx._windows_ import Frame_CreateToolBar
 
 class MainWindow(wx.Frame):
     """ Main Window for the Application """
@@ -40,8 +41,8 @@ class MainWindow(wx.Frame):
         # --------------------------------------------------------
         # -------------------  Create Toolbar --------------------
         # --------------------------------------------------------
-        
-        self.toolbar = wx.ToolBar( self, wx.ID_ANY, style = wx.TB_HORIZONTAL ) 
+         
+        self.toolbar = self.CreateToolBar()
         
         # --------------------------------------------------------
         # ------------------  Add items to Menu ------------------

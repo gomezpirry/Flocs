@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding//controller/main_window_control.py=utf-8
 encoding//controller/validators.py=utf-8
+encoding//views/add_folder_dialog.py=utf-8
 encoding//views/image_panel.py=utf-8
 encoding//views/main_window.py=utf-8
 encoding//views/parameters_panel.py=utf-8
