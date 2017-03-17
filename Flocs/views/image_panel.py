@@ -5,8 +5,8 @@ Created on 18/02/2017
 
 @author: Augusto Gomez
 '''
-import wx, os
-import cv2
+import wx, os, re
+
 
 class ImagePanel(wx.Panel):
     """ Panel of Browser Files """
@@ -39,17 +39,17 @@ class ImagePanel(wx.Panel):
         # --------------------------------------------------------
         
         #set dir for images
-        dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'images/'))
+        dir_image = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'images/'))
         
         # create bit map for Buttons
-        bmpAddFolder = wx.BitmapFromImage(wx.Image(os.path.join(dir, 'addFolder.png')))
-        bmpAddFile = wx.BitmapFromImage(wx.Image(os.path.join(dir, 'addFile.png')))
-        bmpRemove = wx.BitmapFromImage(wx.Image(os.path.join(dir, 'remove.png')))
+        bmpAddFolder = wx.BitmapFromImage(wx.Image(os.path.join(dir_image, 'addFolder.png')))
+        bmpAddFile = wx.BitmapFromImage(wx.Image(os.path.join(dir_image, 'addFile.png')))
+        bmpRemove = wx.BitmapFromImage(wx.Image(os.path.join(dir_image, 'remove.png')))
         
         # create image for TreeCtrl items 
         self.image_list = wx.ImageList(16, 16)
-        self.imageSample = self.image_list.Add(wx.Image(os.path.join(dir, 'sample.png'), wx.BITMAP_TYPE_PNG).ConvertToBitmap())
-        self.imagePhoto  = self.image_list.Add(wx.Image(os.path.join(dir, 'image.png'), wx.BITMAP_TYPE_PNG).ConvertToBitmap())
+        self.imageSample = self.image_list.Add(wx.Image(os.path.join(dir_image, 'sample.png'), wx.BITMAP_TYPE_PNG).ConvertToBitmap())
+        self.imagePhoto  = self.image_list.Add(wx.Image(os.path.join(dir_image, 'image.png'), wx.BITMAP_TYPE_PNG).ConvertToBitmap())
         
         # Create Buttons
         
@@ -68,7 +68,7 @@ class ImagePanel(wx.Panel):
         self.button_remove.SetToolTip(wx.ToolTip(u" Eliminar Carpeta o Archivo"))
         
         # Create File List
-        self.list_files = wx.TreeCtrl(self.listPanel, wx.ID_ANY, style = wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT)
+        self.list_files = wx.TreeCtrl(self.listPanel, wx.ID_ANY, style = wx.TR_DEFAULT_STYLE|wx.BORDER_SUNKEN|wx.TR_HIDE_ROOT|wx.TR_MULTIPLE)
         
         ### Add Root ### ----- CORREGIR
         self.root = self.list_files.AddRoot('Images')
@@ -108,43 +108,67 @@ class ImagePanel(wx.Panel):
         self.SetSizerAndFit(panelBox)
                 
     # --------------------------------------------------------
-    # --------------------  Add Getters ----------------------
+    # ----------------  Auxiliar Functions -------------------
     # -------------------------------------------------------- 
     
-    def traverseTree(self, item = None): 
+    # Verify if parent Item (Sample Time) don't have images path 
+    def verifyEmptySamples(self, item = None):
+        itemList = []
+        if item is None: 
+            item = self.list_files.GetRootItem() 
+        (child1 ,cookie1) = self.list_files.GetFirstChild(item) 
+        while child1.IsOk(): 
+            (child2,cookie2) = self.list_files.GetFirstChild(child1)
+            # add item to list if parent Item (Sample Time) don't have children 
+            if not child2:
+                itemList.append(int(re.findall('\d+', self.list_files.GetItemText(child1))[0]))
+            (child1, cookie1) = self.list_files.GetNextChild(item, cookie1)
+        return itemList
+     
+    # Traverse TreeCtrl for obtaining only Parent Items (Sample Time)  
+    def traverseRootTree(self, item = None): 
         itemList = []
         if item is None: 
             item = self.list_files.GetRootItem() 
         (child ,cookie) = self.list_files.GetFirstChild(item) 
         while child.IsOk(): 
-            itemList.append(self.list_files.GetItemText(child))
+            itemList.append(int(re.findall('\d+', self.list_files.GetItemText(child))[0]))
             (child, cookie) = self.list_files.GetNextChild(item, cookie)
         return itemList
+     
+    # Traverse TreeCtrl for obtaining all Items    
+    def traverseTree(self, isRoot, item = None):
+        itemList = []
+        if item is None: 
+            item = self.list_files.GetRootItem() 
+        (child1 ,cookie1) = self.list_files.GetFirstChild(item) 
+        # traverse Parent Items 
+        while child1.IsOk(): 
+            if isRoot:
+                itemList.append(int(re.findall('\d+', self.list_files.GetItemText(child1))[0]))
+            (child2 ,cookie2) = self.list_files.GetFirstChild(child1) 
+            # traverse path images items
+            while child2.IsOk():
+                itemList.append(self.list_files.GetItemText(child2))
+                (child2, cookie2) = self.list_files.GetNextChild(item, cookie2)
+            (child1, cookie1) = self.list_files.GetNextChild(item, cookie1)
+        return itemList
     
+    # Add Items to TreeCtrl
     def addItem(self, root, paths):
         for path in paths:
             item = self.list_files.AppendItem(root, path ) 
             self.list_files.SetItemPyData(item, None)      
             self.list_files.SetItemImage(item, self.imagePhoto, wx.TreeItemIcon_Normal)
     
+    # Load Image In ImagePanel
     def onView(self, path):
-        img = cv2.imread(path, cv2.IMREAD_COLOR)
-        h, w = img.shape[:2]
-        self.width = w
-        self.height = h   
         panelWidth, panelHeight = self.imagePanel.GetSizeTuple()
-        rgbBmp = wx.BitmapFromBuffer(self.width, self.height, img)
-        self.image = self.scale_bitmap(rgbBmp, panelWidth, panelHeight)
+        self.image = wx.Image(path, wx.BITMAP_TYPE_ANY).Rescale(panelWidth, panelHeight, wx.IMAGE_QUALITY_HIGH).ConvertToBitmap()
         wx.StaticBitmap(self.imagePanel, wx.ID_ANY, self.image)
         self.imagePanel.Refresh()
-
-        
-    def scale_bitmap(self, bitmap, width, height):
-        image = wx.ImageFromBitmap(bitmap)
-        image = image.Scale(width, height, wx.IMAGE_QUALITY_HIGH)
-        result = wx.BitmapFromImage(image)
-        return result   
     
+    # Set White Background to ImagePanel
     def removeImage(self):
         panelWidth, panelHeight = self.imagePanel.GetSizeTuple()
         image_blank = wx.EmptyBitmapRGBA(panelWidth, panelHeight, red=255, blue= 255, green= 255) 

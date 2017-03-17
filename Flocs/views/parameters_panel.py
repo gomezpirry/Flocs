@@ -75,7 +75,7 @@ class ParameterPanel(wx.Panel):
         self.text_equipment = wx.TextCtrl(self, wx.ID_ANY, style = wx.ALIGN_RIGHT, name = "Equipo de Muestra") 
         
         # Temperatura (Decimal)-(25.0, 80.0)
-        label_temp = wx.StaticText(self,  wx.ID_ANY, u' &Temperatura:')
+        label_temp = wx.StaticText(self,  wx.ID_ANY, u' &Temperatura (°C):')
         self.text_temp = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="40", min = min_float, max = max_float, initial=40.0, inc=0.1, name = "Temperatura") 
         
         # Dilución (Decimal)-(0.0, 1.0)
@@ -87,7 +87,7 @@ class ParameterPanel(wx.Panel):
         self.text_date = wx.DatePickerCtrl(self, wx.ID_ANY, style = wx.DP_DROPDOWN|wx.ALIGN_RIGHT, name = "Fecha") 
         
         # Volumen para toma de Imagenes (Decimal)-(0.5, 1000)
-        label_volume = wx.StaticText(self,  wx.ID_ANY, u' &Volumen:')
+        label_volume = wx.StaticText(self,  wx.ID_ANY, u' &Volumen (ml):')
         self.text_volume =   wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0.5", min = min_float, max = max_float, initial=0.5, inc=0.5, name = "Volumen")
         
         # Concentracion de contaminante (Decimal)-(0.0, 1000.0)
@@ -107,7 +107,7 @@ class ParameterPanel(wx.Panel):
         self.text_visualArea = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="0", min = min_float, max = max_float, initial=0, inc=1, name = "Visual") 
         
         # Voltaje (Decimal)-(1.0, 10.0)
-        label_volt = wx.StaticText(self,  wx.ID_ANY, u' &Voltaje:')
+        label_volt = wx.StaticText(self,  wx.ID_ANY, u' &Voltaje (V):')
         self.text_volt = wx.SpinCtrlDouble(self, wx.ID_ANY, style=wx.SP_ARROW_KEYS|wx.ALIGN_RIGHT, value="1", min = min_float, max = max_float, initial=1, inc=0.1, name = "Voltaje") 
         
         # Observaciones (String)-()
